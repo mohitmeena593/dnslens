@@ -1,13 +1,13 @@
 /**
- * Automated test suite for IPv4, IPv6, CIDR Subnetting, Hex, Binary, and Integer Conversions
+ * Comprehensive Automated Test Suite for Bidirectional DNS & Reverse DNS Tool
  */
 
 const fs = require('fs');
 
-function runTestSuite() {
-  console.log('==============================================');
-  console.log('STARTING IP CONVERTER TEST SUITE');
-  console.log('==============================================');
+async function runTestSuite() {
+  console.log('====================================================');
+  console.log('STARTING BIDIRECTIONAL DNS & REVERSE DNS TEST SUITE');
+  console.log('====================================================');
 
   let passed = 0;
   let failed = 0;
@@ -22,188 +22,187 @@ function runTestSuite() {
     }
   }
 
-  // --- IPv4 Logic ---
-  function dottedToInt(dotted) {
-    const octets = dotted.trim().split('.').map(Number);
-    return ((octets[0] << 24) >>> 0) + ((octets[1] << 16) >>> 0) + ((octets[2] << 8) >>> 0) + (octets[3] >>> 0);
+  // --- Utility Functions ---
+  function isIPv4(str) {
+    if (!str) return false;
+    const parts = str.trim().split('.');
+    if (parts.length !== 4) return false;
+    return parts.every(p => {
+      if (!/^\d+$/.test(p)) return false;
+      const num = Number(p);
+      return num >= 0 && num <= 255 && (p === '0' || !p.startsWith('0'));
+    });
   }
 
-  function intToDotted(num) {
-    return [ (num >>> 24) & 255, (num >>> 16) & 255, (num >>> 8) & 255, num & 255 ].join('.');
-  }
-
-  function intToHex(num) {
-    return '0x' + (Number(num) >>> 0).toString(16).toUpperCase().padStart(8, '0');
-  }
-
-  function intToBinary(num) {
-    const n = Number(num) >>> 0;
-    return [
-      ((n >>> 24) & 255).toString(2).padStart(8, '0'),
-      ((n >>> 16) & 255).toString(2).padStart(8, '0'),
-      ((n >>> 8) & 255).toString(2).padStart(8, '0'),
-      (n & 255).toString(2).padStart(8, '0')
-    ].join('.');
-  }
-
-  function intToOctal(num) {
-    const n = Number(num) >>> 0;
-    return [
-      ((n >>> 24) & 255).toString(8).padStart(4, '0'),
-      ((n >>> 16) & 255).toString(8).padStart(4, '0'),
-      ((n >>> 8) & 255).toString(8).padStart(4, '0'),
-      (n & 255).toString(8).padStart(4, '0')
-    ].join('.');
-  }
-
-  function intToReverseDns(num) {
-    const n = Number(num) >>> 0;
-    return `${n & 255}.${(n >>> 8) & 255}.${(n >>> 16) & 255}.${(n >>> 24) & 255}.in-addr.arpa`;
-  }
-
-  function prefixToMask(p) {
-    if (p === 0) return 0;
-    return ((0xFFFFFFFF << (32 - p)) >>> 0);
-  }
-
-  // TEST 1: Dotted decimal to uint32
-  const ip1 = '192.168.1.1';
-  const int1 = dottedToInt(ip1);
-  assert(int1 === 3232235777, 'IPv4 192.168.1.1 -> Integer 3232235777', 3232235777, int1);
-  assert(intToDotted(int1) === ip1, 'Integer 3232235777 -> Dotted 192.168.1.1', ip1, intToDotted(int1));
-  assert(intToHex(int1) === '0xC0A80101', 'IPv4 Hexadecimal conversion', '0xC0A80101', intToHex(int1));
-  assert(intToBinary(int1) === '11000000.10101000.00000001.00000001', 'IPv4 Binary conversion', '11000000.10101000.00000001.00000001', intToBinary(int1));
-  assert(intToOctal(int1) === '0300.0250.0001.0001', 'IPv4 Octal conversion', '0300.0250.0001.0001', intToOctal(int1));
-  assert(intToReverseDns(int1) === '1.1.168.192.in-addr.arpa', 'IPv4 Reverse DNS PTR', '1.1.168.192.in-addr.arpa', intToReverseDns(int1));
-
-  // TEST 2: CIDR Subnetting /24
-  const mask24 = prefixToMask(24);
-  const wildcard24 = (~mask24) >>> 0;
-  const net24 = (int1 & mask24) >>> 0;
-  const bcast24 = (net24 | wildcard24) >>> 0;
-  assert(intToDotted(mask24) === '255.255.255.0', '/24 Netmask is 255.255.255.0', '255.255.255.0', intToDotted(mask24));
-  assert(intToDotted(wildcard24) === '0.0.0.255', '/24 Wildcard is 0.0.0.255', '0.0.0.255', intToDotted(wildcard24));
-  assert(intToDotted(net24) === '192.168.1.0', '/24 Network Address is 192.168.1.0', '192.168.1.0', intToDotted(net24));
-  assert(intToDotted(bcast24) === '192.168.1.255', '/24 Broadcast Address is 192.168.1.255', '192.168.1.255', intToDotted(bcast24));
-  assert(intToDotted(net24 + 1) === '192.168.1.1', '/24 First Usable is 192.168.1.1', '192.168.1.1', intToDotted(net24 + 1));
-  assert(intToDotted(bcast24 - 1) === '192.168.1.254', '/24 Last Usable is 192.168.1.254', '192.168.1.254', intToDotted(bcast24 - 1));
-
-  // TEST 3: CIDR Subnetting Edge Cases (/31 and /32)
-  const mask31 = prefixToMask(31);
-  assert(intToDotted(mask31) === '255.255.255.254', '/31 Netmask is 255.255.255.254', '255.255.255.254', intToDotted(mask31));
-  const mask32 = prefixToMask(32);
-  assert(intToDotted(mask32) === '255.255.255.255', '/32 Netmask is 255.255.255.255', '255.255.255.255', intToDotted(mask32));
-
-  // --- IPv6 Logic ---
-  function parseIPv6ToBigInt(str) {
+  function isIPv6(str) {
+    if (!str) return false;
     let clean = str.trim().toLowerCase();
-    if (!clean) return null;
+    if (!clean.includes(':')) return false;
 
     if (clean.includes('.')) {
       const lastColon = clean.lastIndexOf(':');
-      if (lastColon === -1) return null;
+      if (lastColon === -1) return false;
       const v4part = clean.slice(lastColon + 1);
-      const octets = v4part.split('.').map(Number);
-      const v4int = ((octets[0] << 24) >>> 0) + ((octets[1] << 16) >>> 0) + ((octets[2] << 8) >>> 0) + (octets[3] >>> 0);
-      const hex1 = ((v4int >>> 16) & 0xFFFF).toString(16);
-      const hex2 = (v4int & 0xFFFF).toString(16);
-      clean = clean.slice(0, lastColon) + ':' + hex1 + ':' + hex2;
+      if (!isIPv4(v4part)) return false;
+      clean = clean.slice(0, lastColon) + ':0:0';
     }
 
     const doubleColonCount = (clean.match(/::/g) || []).length;
-    if (doubleColonCount > 1) return null;
+    if (doubleColonCount > 1) return false;
 
     let groups = [];
     if (doubleColonCount === 1) {
-      const parts = clean.split('::');
-      const leftGroups = parts[0] ? parts[0].split(':') : [];
-      const rightGroups = parts[1] ? parts[1].split(':') : [];
-      const missingCount = 8 - (leftGroups.length + rightGroups.length);
-      if (missingCount < 1) return null;
-      groups = [...leftGroups, ...Array(missingCount).fill('0'), ...rightGroups];
+      const [left, right] = clean.split('::');
+      const leftGroups = left ? left.split(':') : [];
+      const rightGroups = right ? right.split(':') : [];
+      const missing = 8 - (leftGroups.length + rightGroups.length);
+      if (missing < 1) return false;
+      groups = [...leftGroups, ...Array(missing).fill('0'), ...rightGroups];
     } else {
       groups = clean.split(':');
     }
 
-    if (groups.length !== 8) return null;
-    let big = 0n;
-    for (let i = 0; i < 8; i++) {
-      const val = BigInt(parseInt(groups[i], 16));
-      big = (big << 16n) | val;
+    if (groups.length !== 8) return false;
+    return groups.every(g => /^[0-9a-f]{1,4}$/i.test(g));
+  }
+
+  function isUrl(str) {
+    if (!str) return false;
+    const clean = str.trim().toLowerCase();
+    return clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('ftp://') || clean.startsWith('//') || (clean.includes('://'));
+  }
+
+  function extractHostname(inputStr) {
+    if (!inputStr) return '';
+    let str = inputStr.trim();
+    str = str.replace(/^["'\[<]+|["'\]>]+$/g, '');
+    if (str.includes('://')) {
+      str = str.split('://')[1];
+    } else if (str.startsWith('//')) {
+      str = str.slice(2);
     }
-    return big;
-  }
-
-  function bigIntToGroups(big) {
-    const groups = [];
-    let temp = big;
-    for (let i = 0; i < 8; i++) {
-      groups.unshift(Number(temp & 0xFFFFn));
-      temp = temp >> 16n;
-    }
-    return groups;
-  }
-
-  function expandIPv6(big) {
-    const groups = bigIntToGroups(big);
-    return groups.map(g => g.toString(16).padStart(4, '0')).join(':');
-  }
-
-  function compressIPv6(big) {
-    const groups = bigIntToGroups(big);
-    const hexGroups = groups.map(g => g.toString(16));
-
-    let bestStart = -1;
-    let bestLen = 0;
-    let currentStart = -1;
-    let currentLen = 0;
-
-    for (let i = 0; i < 8; i++) {
-      if (groups[i] === 0) {
-        if (currentStart === -1) currentStart = i;
-        currentLen++;
-        if (currentLen > bestLen) {
-          bestLen = currentLen;
-          bestStart = currentStart;
-        }
-      } else {
-        currentStart = -1;
-        currentLen = 0;
+    str = str.split('/')[0];
+    str = str.split('?')[0];
+    str = str.split('#')[0];
+    if (!str.includes('[') && str.includes(':')) {
+      const parts = str.split(':');
+      if (parts.length === 2 && /^\d+$/.test(parts[1])) {
+        str = parts[0];
       }
     }
-
-    if (bestLen < 2) return hexGroups.join(':');
-    const left = hexGroups.slice(0, bestStart).join(':');
-    const right = hexGroups.slice(bestStart + bestLen).join(':');
-    return left + '::' + right;
+    return str.trim().toLowerCase();
   }
 
-  function reverseDnsIPv6(big) {
-    const hex = big.toString(16).padStart(32, '0');
-    return hex.split('').reverse().join('.') + '.ip6.arpa';
+  function isDomain(str) {
+    if (!str || str.length < 3 || str.length > 253) return false;
+    if (str.includes('..') || str.startsWith('.') || str.endsWith('.')) return false;
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(str);
   }
 
-  // TEST 4: IPv6 2001:db8::1
-  const v6_1 = '2001:db8::1';
-  const big1 = parseIPv6ToBigInt(v6_1);
-  assert(big1 !== null, 'IPv6 2001:db8::1 parses successfully', true, big1 !== null);
-  assert(expandIPv6(big1) === '2001:0db8:0000:0000:0000:0000:0000:0001', 'IPv6 Expanded format', '2001:0db8:0000:0000:0000:0000:0000:0001', expandIPv6(big1));
-  assert(compressIPv6(big1) === '2001:db8::1', 'IPv6 Compressed RFC 5952 format', '2001:db8::1', compressIPv6(big1));
-  assert(reverseDnsIPv6(big1) === '1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa', 'IPv6 Reverse DNS PTR', '1.0.0.0...8.b.d.0.1.0.0.2.ip6.arpa', reverseDnsIPv6(big1));
+  function classifySingle(item) {
+    const clean = item.trim();
+    if (!clean) return 'EMPTY';
+    if (isIPv4(clean)) return 'IPV4';
+    if (isIPv6(clean)) return 'IPV6';
+    if (isUrl(clean)) {
+      const host = extractHostname(clean);
+      if (isIPv4(host)) return 'IPV4';
+      if (isIPv6(host)) return 'IPV6';
+      if (isDomain(host)) return 'URL';
+    }
+    if (isDomain(extractHostname(clean))) return 'DOMAIN';
+    return 'INVALID';
+  }
 
-  // TEST 5: IPv6 Loopback ::1
-  const loopBig = parseIPv6ToBigInt('::1');
-  assert(compressIPv6(loopBig) === '::1', 'IPv6 Loopback compression', '::1', compressIPv6(loopBig));
-  assert(expandIPv6(loopBig) === '0000:0000:0000:0000:0000:0000:0000:0001', 'IPv6 Loopback expanded', '0000:0000:0000:0000:0000:0000:0000:0001', expandIPv6(loopBig));
+  function ipv4ToPtr(ip) {
+    const octets = ip.trim().split('.');
+    return `${octets[3]}.${octets[2]}.${octets[1]}.${octets[0]}.in-addr.arpa`;
+  }
 
-  // TEST 6: IPv4-Mapped IPv6 ::ffff:192.168.1.1
-  const mappedBig = parseIPv6ToBigInt('::ffff:192.168.1.1');
-  assert(mappedBig !== null, 'IPv4-mapped IPv6 parses successfully', true, mappedBig !== null);
-  assert(expandIPv6(mappedBig) === '0000:0000:0000:0000:0000:ffff:c0a8:0101', 'IPv4-mapped IPv6 expanded hex', '0000:0000:0000:0000:0000:ffff:c0a8:0101', expandIPv6(mappedBig));
+  function ipv6ToPtr(ip) {
+    let clean = ip.trim().toLowerCase();
+    let groups = [];
+    if (clean.includes('::')) {
+      const [left, right] = clean.split('::');
+      const leftGroups = left ? left.split(':') : [];
+      const rightGroups = right ? right.split(':') : [];
+      const missing = 8 - (leftGroups.length + rightGroups.length);
+      groups = [...leftGroups, ...Array(missing).fill('0'), ...rightGroups];
+    } else {
+      groups = clean.split(':');
+    }
+    const hex32 = groups.map(g => g.padStart(4, '0')).join('');
+    return hex32.split('').reverse().join('.') + '.ip6.arpa';
+  }
 
-  console.log('==============================================');
+  // TEST 1: Automatic Detection Tests
+  assert(classifySingle('example.com') === 'DOMAIN', 'Auto-detect domain: example.com', 'DOMAIN', classifySingle('example.com'));
+  assert(classifySingle('https://example.com/api') === 'URL', 'Auto-detect URL: https://example.com/api', 'URL', classifySingle('https://example.com/api'));
+  assert(classifySingle('8.8.8.8') === 'IPV4', 'Auto-detect IPv4: 8.8.8.8', 'IPV4', classifySingle('8.8.8.8'));
+  assert(classifySingle('1.1.1.1') === 'IPV4', 'Auto-detect IPv4: 1.1.1.1', 'IPV4', classifySingle('1.1.1.1'));
+  assert(classifySingle('2001:4860:4860::8888') === 'IPV6', 'Auto-detect IPv6: 2001:4860:4860::8888', 'IPV6', classifySingle('2001:4860:4860::8888'));
+  assert(classifySingle('invalid-domain-test-12345.invalid') === 'DOMAIN', 'Auto-detect non-existent domain as domain type', 'DOMAIN', classifySingle('invalid-domain-test-12345.invalid'));
+  assert(classifySingle('999.999.999.999') === 'INVALID', 'Reject invalid IP', 'INVALID', classifySingle('999.999.999.999'));
+
+  // TEST 2: PTR Record Builder Tests
+  assert(ipv4ToPtr('8.8.8.8') === '8.8.8.8.in-addr.arpa', 'IPv4 PTR: 8.8.8.8', '8.8.8.8.in-addr.arpa', ipv4ToPtr('8.8.8.8'));
+  assert(ipv4ToPtr('1.1.1.1') === '1.1.1.1.in-addr.arpa', 'IPv4 PTR: 1.1.1.1', '1.1.1.1.in-addr.arpa', ipv4ToPtr('1.1.1.1'));
+  const expectedV6Ptr = '8.8.8.8.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.6.8.4.0.6.8.4.1.0.0.2.ip6.arpa';
+  assert(ipv6ToPtr('2001:4860:4860::8888') === expectedV6Ptr, 'IPv6 PTR: 2001:4860:4860::8888', expectedV6Ptr, ipv6ToPtr('2001:4860:4860::8888'));
+
+  // TEST 3: Check UI clean of Presets
+  const html = fs.readFileSync('C:\\Users\\Mohit Meena\\.gemini\\antigravity\\scratch\\ip-converter\\index.html', 'utf8');
+  assert(!html.includes('preset-chips') && !html.includes('PRESETS:'), 'Presets completely removed from index.html', true, !html.includes('preset-chips'));
+  assert(html.includes('LOOKUP'), 'Action button renamed to LOOKUP', true, html.includes('LOOKUP'));
+  assert(html.includes('CYBERTOOL // DNS LOOKUP'), 'Header title updated to CYBERTOOL // DNS LOOKUP', true, html.includes('CYBERTOOL // DNS LOOKUP'));
+
+  // TEST 4: Live DNS Queries via Cloudflare / Google DoH
+  console.log('Testing live DNS queries...');
+  try {
+    // 4.1 Forward DNS for example.com
+    const fwdRes = await fetch('https://cloudflare-dns.com/dns-query?name=example.com&type=A', {
+      headers: { 'Accept': 'application/dns-json' }
+    });
+    const fwdData = await fwdRes.json();
+    const fwdIps = fwdData.Answer ? fwdData.Answer.filter(a => a.type === 1).map(a => a.data) : [];
+    assert(fwdIps.length > 0, 'Live Forward DNS (A record) for example.com', true, fwdIps.length > 0);
+    console.log('   example.com ->', fwdIps);
+
+    // 4.2 Reverse DNS for 8.8.8.8 -> in-addr.arpa PTR
+    const revRes = await fetch('https://cloudflare-dns.com/dns-query?name=8.8.8.8.in-addr.arpa&type=PTR', {
+      headers: { 'Accept': 'application/dns-json' }
+    });
+    const revData = await revRes.json();
+    const ptrHosts = revData.Answer ? revData.Answer.filter(a => a.type === 12).map(a => a.data.replace(/\.$/, '')) : [];
+    assert(ptrHosts.includes('dns.google'), 'Live Reverse DNS (PTR) for 8.8.8.8 -> dns.google', true, ptrHosts.includes('dns.google'));
+    console.log('   8.8.8.8 PTR ->', ptrHosts);
+
+    // 4.3 Reverse DNS for 1.1.1.1 -> in-addr.arpa PTR
+    const rev1Res = await fetch('https://cloudflare-dns.com/dns-query?name=1.1.1.1.in-addr.arpa&type=PTR', {
+      headers: { 'Accept': 'application/dns-json' }
+    });
+    const rev1Data = await rev1Res.json();
+    const ptr1Hosts = rev1Data.Answer ? rev1Data.Answer.filter(a => a.type === 12).map(a => a.data.replace(/\.$/, '')) : [];
+    assert(ptr1Hosts.includes('one.one.one.one'), 'Live Reverse DNS (PTR) for 1.1.1.1 -> one.one.one.one', true, ptr1Hosts.includes('one.one.one.one'));
+    console.log('   1.1.1.1 PTR ->', ptr1Hosts);
+
+    // 4.4 Reverse DNS for 2001:4860:4860::8888 -> ip6.arpa PTR
+    const rev6Res = await fetch(`https://cloudflare-dns.com/dns-query?name=${expectedV6Ptr}&type=PTR`, {
+      headers: { 'Accept': 'application/dns-json' }
+    });
+    const rev6Data = await rev6Res.json();
+    const ptr6Hosts = rev6Data.Answer ? rev6Data.Answer.filter(a => a.type === 12).map(a => a.data.replace(/\.$/, '')) : [];
+    assert(ptr6Hosts.includes('dns.google'), 'Live Reverse DNS (PTR) for 2001:4860:4860::8888 -> dns.google', true, ptr6Hosts.includes('dns.google'));
+    console.log('   2001:4860:4860::8888 PTR ->', ptr6Hosts);
+
+  } catch (err) {
+    console.log('[WARN] Network fetch interrupted:', err.message);
+  }
+
+  console.log('====================================================');
   console.log(`TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
-  console.log('==============================================');
+  console.log('====================================================');
 
   if (failed > 0) process.exit(1);
 }
