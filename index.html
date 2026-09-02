@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Production-quality Bidirectional DNS & Reverse DNS Lookup tool. Resolve Domains/URLs to IPv4/IPv6 and reverse-lookup IPv4/IPv6 addresses to PTR hostnames.">
+  <title>CYBERTOOL // DNS LOOKUP</title>
+  <!-- Google Fonts: Space Grotesk & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+  <!-- Ambient background grid / tech overlay -->
+  <div class="bg-matrix-overlay" aria-hidden="true"></div>
+
+  <main class="app-container">
+    <div class="cyber-card" id="main-card">
+      
+      <!-- Top Cyber Header Banner -->
+      <header class="card-header">
+        <div class="header-left">
+          <div class="header-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
+          <h1 class="card-title">CYBERTOOL <span class="title-sub">// DNS LOOKUP</span></h1>
+        </div>
+        <div class="header-right">
+          <span class="status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">SYSTEM ONLINE</span>
+          </span>
+        </div>
+      </header>
+
+      <!-- Main Interactive Body -->
+      <section class="card-body">
+        
+        <!-- Input Header & Stream Stats -->
+        <div class="stream-header">
+          <div class="stream-title-group">
+            <label for="dns-input" class="stream-label" id="stream-label">DOMAIN INPUT</label>
+            <span class="badge-mode" id="detected-mode-badge">AUTO DETECT</span>
+          </div>
+          <div class="stream-stats" id="stream-stats">
+            <span id="char-count">0</span> CHARACTERS <span class="stat-divider">|</span> <span id="line-count">0</span> LINES
+          </div>
+        </div>
+
+        <!-- Input Textarea Container (Optimized full-width height without presets) -->
+        <div class="input-wrapper">
+          <textarea 
+            id="dns-input" 
+            name="dns_input" 
+            placeholder="Enter a domain, URL, IPv4 address, or IPv6 address..." 
+            spellcheck="false" 
+            autocomplete="off" 
+            rows="5"
+            aria-label="Domain, URL, IPv4, or IPv6 input"></textarea>
+          <button type="button" id="btn-paste" class="btn-paste-quick" title="Paste from clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <span>PASTE</span>
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons-group">
+          <button type="button" id="btn-lookup" class="btn-cyber btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>LOOKUP</span>
+          </button>
+          <button type="button" id="btn-clear" class="btn-cyber btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span>CLEAR INPUT</span>
+          </button>
+        </div>
+
+        <!-- Terminal Output Area -->
+        <div class="terminal-container" id="terminal-container" role="region" aria-label="Terminal DNS lookup output">
+          <div class="terminal-bar">
+            <div class="terminal-bar-left">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">TERMINAL STREAM // RESULTS</span>
+            </div>
+            <div class="terminal-bar-actions">
+              <button type="button" id="btn-copy-all" class="terminal-btn" title="Copy entire terminal output">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>COPY ALL</span>
+              </button>
+              <button type="button" id="btn-download" class="terminal-btn" title="Download results as TXT">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>EXPORT</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Terminal Output Screen -->
+          <div class="terminal-screen" id="terminal-screen" tabindex="0">
+            <div class="terminal-line log-init">
+              <span class="prompt-symbol">&gt;</span> <span class="log-text">System initialized ...</span>
+            </div>
+            <div class="terminal-line log-ready">
+              <span class="prompt-symbol">&gt;</span> <span class="log-text">Ready for input stream ...</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Bottom Card Status Footer -->
+      <footer class="card-footer">
+        <div class="footer-content">
+          <span class="footer-prefix">SECURE CONNECTION ESTABLISHED // CREATED BY</span>
+          <a href="https://www.linkedin.com/in/mohit-meena-08a239332/" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             class="creator-link" 
+             title="Visit Mohit Meena's LinkedIn Profile">MOHIT MEENA</a>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script src="Script.js"></script>
+</body>
+</html>
